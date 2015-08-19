@@ -107,6 +107,13 @@ static GLboolean initLibraries(void)
             GetProcAddress(_glfw.win32.dwmapi.instance, "DwmFlush");
     }
 
+    _glfw.win32.shcore.instance = LoadLibraryW(L"shcore.dll");
+    if (_glfw.win32.shcore.instance)
+    {
+        _glfw.win32.shcore.SetProcessDPIAwareness = (SETPROCESSDPIAWARENESS_T)
+            GetProcAddress(_glfw.win32.shcore.instance, "SetProcessDPIAwareness");
+    }
+
     return GL_TRUE;
 }
 
@@ -122,6 +129,9 @@ static void terminateLibraries(void)
 
     if (_glfw.win32.dwmapi.instance)
         FreeLibrary(_glfw.win32.dwmapi.instance);
+
+    if (_glfw.win32.shcore.instance)
+        FreeLibrary(_glfw.win32.shcore.instance);
 }
 
 // Create key code translation tables
@@ -336,7 +346,9 @@ int _glfwPlatformInit(void)
 
     createKeyTables();
 
-    if (_glfw_SetProcessDPIAware)
+    if (_glfw_SetProcessDPIAwareness)
+        _glfw_SetProcessDPIAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+    else if (_glfw_SetProcessDPIAware)
         _glfw_SetProcessDPIAware();
 
     if (!_glfwRegisterWindowClass())

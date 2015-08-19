@@ -71,6 +71,7 @@ GLFW bundles a number of dependencies in the `deps/` directory.
  - Removed all mention of GLU in examples, build files and package dependencies
  - Bugfix: Initialization failed on headless systems
  - Bugfix: The cached current context could get out of sync
+ - [Win32] Added support for per-monitor DPI
  - [Win32] Renamed hybrid GPU override compile-time option to
            `_GLFW_USE_HYBRID_HPG` and added support for AMD PowerXpress systems
  - [Win32] Bugfix: `glfwGetVideoModes` included unusable modes on some systems

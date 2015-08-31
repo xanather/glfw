@@ -784,12 +784,16 @@ GLboolean _glfwRegisterWindowClass(void)
     wc.lpszMenuName  = NULL;                        // No menu
     wc.lpszClassName = _GLFW_WNDCLASSNAME;
 
-    // Load user-provided icon if available
-    wc.hIcon = LoadIconW(GetModuleHandleW(NULL), L"GLFW_ICON");
+    // Load user-provided icon if available (attempt .ico first then .bmp)
+    wc.hIcon = LoadImageW(GetModuleHandleW(NULL), L"GLFW_ICON", IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
     if (!wc.hIcon)
     {
-        // No user-provided icon found, load default icon
-        wc.hIcon = LoadIconW(NULL, IDI_WINLOGO);
+        wc.hIcon = LoadImageW(GetModuleHandleW(NULL), L"GLFW_ICON", IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+        if (!wc.hIcon)
+        {
+            // No user-provided icon found, load default icon
+            wc.hIcon = LoadImageW(NULL, IDI_WINLOGO, IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_SHARED);
+        }
     }
 
     if (!RegisterClassW(&wc))

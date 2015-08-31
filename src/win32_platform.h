@@ -157,6 +157,8 @@ typedef struct _GLFWwindowWin32
     // The last received cursor position, regardless of source
     int                 cursorPosX, cursorPosY;
 
+	GLboolean modalTimer;
+
 } _GLFWwindowWin32;
 
 

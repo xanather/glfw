@@ -323,8 +323,28 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg,
                 case SC_KEYMENU:
                     return 0;
             }
+
+			// Enables a modal timer (posted as WM_TIMER) if drag/resize system commands are detected,
+			// this allows the game to continue rendering while inside a win32 modal loop
+			// 0xF001 = SC_UNDOCUMENTED_RESIZELOWER, 0xF008 = SC_UNDOCUMENTED_RESIZEUPPER, 0xF012 = SC_UNDOCUMENTED_DRAG
+			if ((wParam >= 0xF001 && wParam <= 0xF008) || wParam == 0xF012)
+			{
+				window->win32.modalTimer = GL_TRUE;
+				SetTimer(hWnd, 1, USER_TIMER_MINIMUM, NULL);
+			}
             break;
         }
+
+		case WM_TIMER:
+		{
+			// We must kill the timer and renable it after the refresh has occured, otherwise
+			// there is a possibility for the call to _glfwInputWindowDamage to take longer than
+			// the elapse time specified in the timer (which would cause endless WM_TIMER messages)
+			KillTimer(hWnd, 1);
+			_glfwInputWindowDamage(window);
+			SetTimer(hWnd, 1, USER_TIMER_MINIMUM, NULL);
+			return 0;
+		}
 
         case WM_CLOSE:
         {
@@ -1051,6 +1071,18 @@ void _glfwPlatformPollEvents(void)
             }
         }
     }
+	
+	// Ensure no modal loop timer is enabled on any of the windows after escaping the message loop
+	window = _glfw.windowListHead;
+	while (window)
+	{
+		if (window->win32.modalTimer)
+		{
+			window->win32.modalTimer = GL_FALSE;
+			KillTimer(window->win32.handle, 1);
+		}
+		window = window->next;
+	}
 }
 
 void _glfwPlatformWaitEvents(void)
